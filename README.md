@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://heroku.com/deploy?template=https://github.com/YOUR_USERNAME/subsplease-filestore-bypass">
+  <a href="https://www.heroku.com/deploy?template=https://github.com/IamElite/sp">
     <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku">
   </a>
 </p>
@@ -58,6 +58,8 @@ A Telegram bot that tracks [SubsPlease](https://subsplease.org) anime releases, 
 | `AUTO_POST` | | `false` | Auto-post new releases |
 | `RSS_FEED_URL` | | `https://subsplease.org/rss/` | RSS feed URL |
 | `POLL_INTERVAL` | | `300` | Poll interval (seconds) |
+| `UPSTREAM_REPO` | | `https://github.com/IamElite/sp` | Upstream repo URL (for auto-update) |
+| `UPSTREAM_BRANCH` | | `main` | Branch to track |
 | `LOG_LEVEL` | | `INFO` | Logging level |
 
 ---
@@ -65,7 +67,7 @@ A Telegram bot that tracks [SubsPlease](https://subsplease.org) anime releases, 
 ## Manual Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/subsplease-filestore-bypass.git
+git clone https://github.com/IamElite/sp.git
 cd subsplease-filestore-bypass
 pip install -r requirements.txt
 cp config/sample.env .env

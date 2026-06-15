@@ -75,12 +75,12 @@
     "UPSTREAM_REPO": {
       "description": "GitHub repo URL to pull updates from on each restart",
       "required": false,
-      "value": "https://github.com/YOUR_USERNAME/subsplease-filestore-bypass"
+      "value": "https://github.com/IamElite/sp"
     },
     "UPSTREAM_BRANCH": {
       "description": "Branch to track for upstream updates",
       "required": false,
-      "value": "master"
+      "value": "main"
     },
     "LOG_LEVEL": {
       "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",

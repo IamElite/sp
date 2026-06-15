@@ -37,6 +37,6 @@ class Config:
     FILE_SUFFIX_TAG = os.getenv("FILE_SUFFIX_TAG", "@SyntaxRealm")
 
     UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "")
-    UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "master")
+    UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "main")
 
     PORT = int(os.getenv("PORT", 8080))
