@@ -72,6 +72,11 @@
       "required": false,
       "value": "300"
     },
+    "ENCODE_QUALITY": {
+      "description": "Encode quality override (auto, 480, 720, 1080, hdrip). 'auto' uses RSS release quality.",
+      "required": false,
+      "value": "auto"
+    },
     "UPSTREAM_REPO": {
       "description": "GitHub repo URL to pull updates from on each restart",
       "required": false,

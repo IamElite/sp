@@ -8,6 +8,7 @@ from database.models.release import ReleaseModel
 from database.models.file import FileModel
 from plugins.downloader.magnet import MagnetDownloader
 from plugins.encoder.manager import EncodeJob
+from plugins.encoder.presets import resolve_quality_key
 from plugins.fileshare.link import LinkBuilder
 from plugins.metadata.enrich import MetadataEnricher
 from plugins.release_tracker.rss_poller import RSSPoller
@@ -115,7 +116,7 @@ class Worker:
         file_path = await self.downloader.download(magnet)
         self.queue.update_progress(job._id, 100)
 
-        quality = job.payload.get("quality", "1080")
+        quality = resolve_quality_key(job.payload.get("quality", "1080"), Config.ENCODE_QUALITY)
 
         if Config.ENCODING_ENABLED:
             self.queue.enqueue("encode", {
@@ -135,7 +136,7 @@ class Worker:
 
     async def _process_encode(self, job):
         file_path = Path(job.payload["file_path"])
-        quality = job.payload.get("quality", "1080")
+        quality = resolve_quality_key(job.payload.get("quality", "1080"), Config.ENCODE_QUALITY)
         enc = EncodeJob(file_path, quality)
         output = await enc.run()
         cleanup_file(file_path)

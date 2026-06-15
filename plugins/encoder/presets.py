@@ -107,5 +107,23 @@ QUALITY_PRESETS = {
 }
 
 
+QUALITY_DISPLAY = {
+    "480": "480p",
+    "720": "720p",
+    "1080": "1080p",
+    "hdrip": "1080p",
+}
+
+
 def get_preset(quality: str) -> dict:
     return QUALITY_PRESETS.get(quality, QUALITY_PRESETS["1080"])
+
+
+def resolve_quality_key(rss_quality: str, override: str = "") -> str:
+    if override and override in QUALITY_PRESETS:
+        return override
+    return rss_quality if rss_quality in QUALITY_PRESETS else "1080"
+
+
+def quality_display(quality: str) -> str:
+    return QUALITY_DISPLAY.get(quality, f"{quality}p" if quality else "480p")

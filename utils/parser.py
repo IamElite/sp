@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass
 from typing import Optional
+from plugins.encoder.presets import quality_display
 
 
 @dataclass
@@ -95,9 +96,7 @@ def detect_season(title: str) -> tuple[int, str]:
 def build_filename(
     season: int, episode: str, english_title: str, quality: str, suffix_tag: str
 ) -> str:
-    quality_tag = (
-        f"{quality}p" if quality and not quality.endswith("p") else quality or "480p"
-    )
+    quality_tag = quality_display(quality)
     return (
         f"[S{season:02d}-E{episode}] {english_title} "
         f"[{quality_tag}] [ESUB] {suffix_tag}.mkv"

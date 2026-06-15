@@ -39,4 +39,6 @@ class Config:
     UPSTREAM_REPO = os.getenv("UPSTREAM_REPO", "https://github.com/IamElite/sp")
     UPSTREAM_BRANCH = os.getenv("UPSTREAM_BRANCH", "main")
 
+    ENCODE_QUALITY = os.getenv("ENCODE_QUALITY", "auto")
+
     PORT = int(os.getenv("PORT", 8080))
