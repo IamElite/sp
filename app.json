@@ -1,0 +1,106 @@
+{
+  "name": "SubsPlease FileStore Bypass",
+  "description": "Telegram bot that tracks SubsPlease anime releases, downloads via magnet, enriches metadata, and serves files via Telegram file share links — bypassing traditional filestore hosting.",
+  "logo": "",
+  "keywords": [
+    "anime",
+    "subsplease",
+    "telegram",
+    "bot",
+    "pyrogram",
+    "kurigram",
+    "magnet",
+    "aria2c",
+    "heroku"
+  ],
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token from @BotFather",
+      "required": true
+    },
+    "API_ID": {
+      "description": "Telegram API ID from my.telegram.org/apps",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API Hash from my.telegram.org/apps",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Your Telegram user ID (admin access)",
+      "required": true
+    },
+    "DB_CHANNEL_ID": {
+      "description": "Channel ID where files are stored (e.g. -1001234567890)",
+      "required": true
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB connection string (Atlas free tier works)",
+      "required": true
+    },
+    "DATABASE_NAME": {
+      "description": "MongoDB database name",
+      "required": false,
+      "value": "subsplease_bot"
+    },
+    "TARGET_CHAT_ID": {
+      "description": "Optional: Chat ID to auto-post new releases (leave empty to disable)",
+      "required": false
+    },
+    "FILE_SUFFIX_TAG": {
+      "description": "Suffix tag appended in filename after [ESUB]",
+      "required": false,
+      "value": "@SyntaxRealm"
+    },
+    "ENCODING_ENABLED": {
+      "description": "Enable ffmpeg re-encoding before upload (true/false)",
+      "required": false,
+      "value": "false"
+    },
+    "AUTO_POST": {
+      "description": "Auto-post new releases to TARGET_CHAT_ID (true/false)",
+      "required": false,
+      "value": "false"
+    },
+    "RSS_FEED_URL": {
+      "description": "SubsPlease RSS feed URL",
+      "required": false,
+      "value": "https://subsplease.org/rss/"
+    },
+    "POLL_INTERVAL": {
+      "description": "RSS poll interval in seconds",
+      "required": false,
+      "value": "300"
+    },
+    "UPSTREAM_REPO": {
+      "description": "GitHub repo URL to pull updates from on each restart",
+      "required": false,
+      "value": "https://github.com/YOUR_USERNAME/subsplease-filestore-bypass"
+    },
+    "UPSTREAM_BRANCH": {
+      "description": "Branch to track for upstream updates",
+      "required": false,
+      "value": "master"
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
+      "required": false,
+      "value": "INFO"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-2x"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    },
+    {
+      "url": "heroku-community/apt"
+    }
+  ],
+  "stack": "heroku-22"
+}
