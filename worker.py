@@ -116,15 +116,29 @@ class Worker:
         file_path = await self.downloader.download(magnet)
         self.queue.update_progress(job._id, 100)
 
-        quality = resolve_quality_key(job.payload.get("quality", "1080"), Config.ENCODE_QUALITY)
+        rss_quality = job.payload.get("quality", "1080")
 
         if Config.ENCODING_ENABLED:
-            self.queue.enqueue("encode", {
-                "release_hash": job.payload["release_hash"],
-                "file_path": str(file_path),
-                "quality": quality,
-            })
+            if rss_quality == "1080" and Config.ENCODE_QUALITY == "auto":
+                self.queue.enqueue("encode", {
+                    "release_hash": job.payload["release_hash"],
+                    "file_path": str(file_path),
+                    "quality": "1080",
+                })
+                self.queue.enqueue("encode", {
+                    "release_hash": job.payload["release_hash"],
+                    "file_path": str(file_path),
+                    "quality": "hdrip",
+                })
+            else:
+                quality = resolve_quality_key(rss_quality, Config.ENCODE_QUALITY)
+                self.queue.enqueue("encode", {
+                    "release_hash": job.payload["release_hash"],
+                    "file_path": str(file_path),
+                    "quality": quality,
+                })
         else:
+            quality = resolve_quality_key(rss_quality, Config.ENCODE_QUALITY)
             self.queue.enqueue("upload", {
                 "release_hash": job.payload["release_hash"],
                 "file_path": str(file_path),
@@ -136,10 +150,9 @@ class Worker:
 
     async def _process_encode(self, job):
         file_path = Path(job.payload["file_path"])
-        quality = resolve_quality_key(job.payload.get("quality", "1080"), Config.ENCODE_QUALITY)
+        quality = job.payload["quality"]
         enc = EncodeJob(file_path, quality)
         output = await enc.run()
-        cleanup_file(file_path)
 
         self.queue.update_progress(job._id, 100)
 
