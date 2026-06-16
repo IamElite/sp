@@ -14,6 +14,7 @@ class Database:
         self.files: Collection | None = None
         self.jobs: Collection | None = None
         self.users: Collection | None = None
+        self.pending_posts: Collection | None = None
 
     def connect(self):
         logger.info("Connecting to MongoDB...")
@@ -28,6 +29,7 @@ class Database:
         self.files = self._db["files"]
         self.jobs = self._db["jobs"]
         self.users = self._db["users"]
+        self.pending_posts = self._db["pending_posts"]
         self._create_indexes()
         logger.info("MongoDB connected")
 
@@ -39,6 +41,7 @@ class Database:
         self.users.create_index("_id")
         self.jobs.create_index([("status", 1), ("priority", -1), ("created_at", 1)])
         self.jobs.create_index([("type", 1), ("status", 1)])
+        self.pending_posts.create_index("group_id")
 
     def close(self):
         if self._client:

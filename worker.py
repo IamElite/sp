@@ -1,6 +1,9 @@
 import asyncio
+import re
 import time
 from pathlib import Path
+
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config.settings import Config
 from database.mongo import db
@@ -27,6 +30,47 @@ from utils.logger import setup_logger
 from utils.queue_manager import QueueManager
 
 logger = setup_logger("worker")
+
+QUALITY_ORDER = ["480p", "720p", "1080p", "HDRip"]
+
+
+def _get_group_id(title: str, episode: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return f"{slug}-{episode}"
+
+
+def _build_caption(pending: dict) -> str:
+    qualities = pending.get("qualities", [])
+    quality_list = " • ".join(q["quality"] for q in qualities)
+    return (
+        f'<blockquote><b>➲ {pending["anime_name"]}</b></blockquote>\n'
+        f'╭──────────────\n'
+        f'◈ Season   : {pending["season"]}\n'
+        f'◈ Episodes : {pending["episode"]} [ #NEW ]\n'
+        f'◈ Audio    : Jap Dub [ #ESUB ]\n'
+        f'◈ Quality  : {quality_list}\n'
+        f'◈ Genre    : {pending["genre"]}\n'
+        f'╰──────────────\n'
+        f'<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>'
+    )
+
+
+def _build_buttons(pending: dict) -> InlineKeyboardMarkup:
+    qualities = pending.get("qualities", [])
+    uploaded = {q["quality"] for q in qualities}
+    buttons = []
+    row = []
+    for label in QUALITY_ORDER:
+        if label in uploaded:
+            row.append(InlineKeyboardButton(label, callback_data=f"dl:{label}:{pending['group_id']}"))
+            if len(row) == 3:
+                buttons.append(row)
+                row = []
+    if row:
+        buttons.append(row)
+    if len(uploaded) >= 4:
+        buttons.append([InlineKeyboardButton("Get All", callback_data=f"dl:all:{pending['group_id']}")])
+    return InlineKeyboardMarkup(buttons)
 
 
 class Worker:
@@ -138,12 +182,8 @@ class Worker:
                     "quality": quality,
                 })
         else:
-            quality = resolve_quality_key(rss_quality, Config.ENCODE_QUALITY)
-            self.queue.enqueue("upload", {
-                "release_hash": job.payload["release_hash"],
-                "file_path": str(file_path),
-                "quality": quality,
-            })
+            cleanup_file(file_path)
+            logger.info(f"Skipped upload (encoding disabled): {file_path.name}")
 
         self.queue.update_status(job._id, "done")
         self.release_svc.mark_processed(job.payload["release_hash"])
@@ -182,13 +222,8 @@ class Worker:
             file_path.rename(new_path)
             file_path = new_path
 
-        caption_parts = [f"📁 {file_path.name}"]
-        if quality:
-            caption_parts.append(f"🎬 Quality: {quality}p")
-        caption = "\n".join(caption_parts)
-
         uploader = TelegramUploader(self.tg)
-        result = await uploader.upload(file_path, caption)
+        result = await uploader.upload(file_path)
 
         bot_info = await self.tg.client.get_me()
         link = LinkBuilder.build_share_link(
@@ -198,7 +233,7 @@ class Worker:
         )
 
         file_record = FileModel(
-            release_hash=job.payload["release_hash"],
+            release_hash=release_hash,
             message_id=result.message_id,
             channel_id=Config.DB_CHANNEL_ID,
             telegram_file_id=result.telegram_file_id,
@@ -212,23 +247,102 @@ class Worker:
         cleanup_file(file_path)
         self.queue.update_progress(job._id, 100)
 
-        if Config.AUTO_POST and Config.TARGET_CHAT_ID:
-            self.queue.enqueue("post", {
-                "link": link,
-                "caption": caption,
-                "target_chat_id": Config.TARGET_CHAT_ID,
-            })
+        if release:
+            meta = release.get("metadata") or {}
+            season, _ = detect_season(release["title"])
+            group_id = _get_group_id(release["title"], release["episode"])
+
+            quality_label = f"{quality}p" if quality and not quality.endswith("p") else quality
+            if quality == "hdrip":
+                quality_label = "HDRip"
+
+            db.pending_posts.update_one(
+                {"group_id": group_id},
+                {
+                    "$setOnInsert": {
+                        "group_id": group_id,
+                        "anime_name": get_english_title(meta) or release["title"],
+                        "season": f"S{season:02d}",
+                        "episode": release["episode"],
+                        "genre": ", ".join(meta.get("genres", [])) or "N/A",
+                        "poster_url": meta.get("poster_url", ""),
+                        "all_done": False,
+                        "post_message_id": None,
+                    },
+                    "$push": {
+                        "qualities": {
+                            "quality": quality_label,
+                            "link": link,
+                            "release_hash": release_hash,
+                        }
+                    },
+                },
+                upsert=True,
+            )
+
+            if Config.AUTO_POST and Config.TARGET_CHAT_ID:
+                self.queue.enqueue("post", {
+                    "group_id": group_id,
+                    "target_chat_id": Config.TARGET_CHAT_ID,
+                })
 
         self.queue.update_status(job._id, "done")
         logger.info(f"Upload complete: {link}")
 
     async def _process_post(self, job):
-        link = job.payload["link"]
-        caption = job.payload.get("caption", "")
-        target = job.payload.get("target_chat_id")
+        group_id = job.payload["group_id"]
+        target = job.payload["target_chat_id"]
 
-        text = f"**New Release**\n\n{caption}\n\n📥 {link}"
-        await self.tg.send_message(chat_id=target, text=text)
+        pending = db.pending_posts.find_one({"group_id": group_id})
+        if not pending:
+            logger.warning(f"No pending post for group {group_id}")
+            self.queue.update_status(job._id, "done")
+            return
+
+        caption = _build_caption(pending)
+        reply_markup = _build_buttons(pending)
+        poster_url = pending.get("poster_url", "")
+        msg_id = pending.get("post_message_id")
+
+        try:
+            if msg_id:
+                await self.tg.client.edit_message_caption(
+                    chat_id=target,
+                    message_id=msg_id,
+                    caption=caption,
+                    parse_mode="html",
+                )
+                await self.tg.client.edit_message_reply_markup(
+                    chat_id=target,
+                    message_id=msg_id,
+                    reply_markup=reply_markup,
+                )
+            elif poster_url:
+                msg = await self.tg.client.send_photo(
+                    chat_id=target,
+                    photo=poster_url,
+                    caption=caption,
+                    parse_mode="html",
+                    reply_markup=reply_markup,
+                )
+                db.pending_posts.update_one(
+                    {"group_id": group_id},
+                    {"$set": {"post_message_id": msg.id}},
+                )
+            else:
+                msg = await self.tg.client.send_message(
+                    chat_id=target,
+                    text=caption,
+                    parse_mode="html",
+                    reply_markup=reply_markup,
+                )
+                db.pending_posts.update_one(
+                    {"group_id": group_id},
+                    {"$set": {"post_message_id": msg.id}},
+                )
+        except Exception as e:
+            logger.error(f"Post to target failed: {e}")
+
         self.queue.update_status(job._id, "done")
 
     async def run_cycle(self):
