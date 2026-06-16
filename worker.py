@@ -42,16 +42,12 @@ def _get_group_id(title: str, episode: str) -> str:
 def _build_caption(pending: dict) -> str:
     qualities = pending.get("qualities", [])
     quality_list = " • ".join(q["quality"] for q in qualities)
-    return (
-        f'<blockquote><b>➲ {pending["anime_name"]}</b></blockquote>\n'
-        f'╭──────────────\n'
-        f'◈ Season   : {pending["season"]}\n'
-        f'◈ Episodes : {pending["episode"]} [ #NEW ]\n'
-        f'◈ Audio    : Jap Dub [ #ESUB ]\n'
-        f'◈ Quality  : {quality_list}\n'
-        f'◈ Genre    : {pending["genre"]}\n'
-        f'╰──────────────\n'
-        f'<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>'
+    return Config.POST_CAPTION.format(
+        anime_name=pending["anime_name"],
+        season=pending["season"],
+        episode=pending["episode"],
+        quality_list=quality_list,
+        genre=pending["genre"],
     )
 
 

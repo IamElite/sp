@@ -77,6 +77,10 @@
       "required": false,
       "value": "auto"
     },
+    "POST_CAPTION": {
+      "description": "HTML caption template for target channel posts. Placeholders: {anime_name}, {season}, {episode}, {quality_list}, {genre}",
+      "required": false
+    },
     "UPSTREAM_REPO": {
       "description": "GitHub repo URL to pull updates from on each restart",
       "required": false,

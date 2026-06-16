@@ -41,4 +41,17 @@ class Config:
 
     ENCODE_QUALITY = os.getenv("ENCODE_QUALITY", "auto")
 
+    POST_CAPTION = os.getenv(
+        "POST_CAPTION",
+        "<blockquote><b>➲ {anime_name}</b></blockquote>\n"
+        "╭──────────────\n"
+        "◈ Season   : {season}\n"
+        "◈ Episodes : {episode} [ #NEW ]\n"
+        "◈ Audio    : Jap Dub [ #ESUB ]\n"
+        "◈ Quality  : {quality_list}\n"
+        "◈ Genre    : {genre}\n"
+        "╰──────────────\n"
+        "<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>",
+    )
+
     PORT = int(os.getenv("PORT", 8080))
