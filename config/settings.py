@@ -41,6 +41,4 @@ class Config:
 
     ENCODE_QUALITY = os.getenv("ENCODE_QUALITY", "auto")
 
-    POST_CAPTION = os.getenv("POST_CAPTION")
-
     PORT = int(os.getenv("PORT", 8080))
