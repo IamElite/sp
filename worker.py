@@ -1,5 +1,4 @@
 import asyncio
-import os
 import re
 import time
 from pathlib import Path
@@ -40,24 +39,10 @@ def _get_group_id(title: str, episode: str) -> str:
     return f"{slug}-{episode}"
 
 
-_POST_CAPTION_DEFAULT = (
-    '<blockquote><b>➲ {anime_name}</b></blockquote>\n'
-    '╭──────────────\n'
-    '◈ Season   : {season}\n'
-    '◈ Episodes : {episode} [ #NEW ]\n'
-    '◈ Audio    : Jap Dub [ #ESUB ]\n'
-    '◈ Quality  : {quality_list}\n'
-    '◈ Genre    : {genre}\n'
-    '╰──────────────\n'
-    '<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>'
-)
-
-
 def _build_caption(pending: dict) -> str:
     qualities = pending.get("qualities", [])
     quality_list = " • ".join(q["quality"] for q in qualities)
-    template = os.getenv("POST_CAPTION", _POST_CAPTION_DEFAULT)
-    return template.format(
+    return Config.TARGET_POST_CAPTION.format(
         anime_name=pending["anime_name"],
         season=pending["season"],
         episode=pending["episode"],

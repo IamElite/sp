@@ -77,9 +77,10 @@
       "required": false,
       "value": "auto"
     },
-    "POST_CAPTION": {
-      "description": "HTML caption template for target channel posts. Placeholders: {anime_name}, {season}, {episode}, {quality_list}, {genre}",
-      "required": false
+    "TARGET_POST_CAPTION": {
+      "description": "HTML template for target channel posts. Placeholders: {anime_name}, {season}, {episode}, {quality_list}, {genre}",
+      "required": false,
+      "value": "<blockquote><b>➲ {anime_name}</b></blockquote>\n╭──────────────\n◈ Season   : {season}\n◈ Episodes : {episode} [ #NEW ]\n◈ Audio    : Jap Dub [ #ESUB ]\n◈ Quality  : {quality_list}\n◈ Genre    : {genre}\n╰──────────────\n<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>"
     },
     "UPSTREAM_REPO": {
       "description": "GitHub repo URL to pull updates from on each restart",
