@@ -43,15 +43,6 @@
       "required": false,
       "value": "subsplease_bot"
     },
-    "TARGET_CHAT_ID": {
-      "description": "Optional: Chat ID to auto-post new releases (leave empty to disable)",
-      "required": false
-    },
-    "FILE_SUFFIX_TAG": {
-      "description": "Suffix tag appended in filename after [ESUB]",
-      "required": false,
-      "value": "@SyntaxRealm"
-    },
     "ENCODING_ENABLED": {
       "description": "Enable ffmpeg re-encoding before upload (true/false)",
       "required": false,
@@ -62,40 +53,10 @@
       "required": false,
       "value": "false"
     },
-    "RSS_FEED_URL": {
-      "description": "SubsPlease RSS feed URL",
-      "required": false,
-      "value": "https://subsplease.org/rss/"
-    },
-    "POLL_INTERVAL": {
-      "description": "RSS poll interval in seconds",
-      "required": false,
-      "value": "300"
-    },
-    "ENCODE_QUALITY": {
-      "description": "Encode quality override (auto, 480, 720, 1080, hdrip). 'auto' uses RSS release quality.",
-      "required": false,
-      "value": "auto"
-    },
-    "TARGET_POST_CAPTION": {
-      "description": "HTML template for target channel posts. Placeholders: {anime_name}, {season}, {episode}, {quality_list}, {genre}",
-      "required": false,
-      "value": "<blockquote><b>➲ {anime_name}</b></blockquote>\n╭──────────────\n◈ Season   : {season}\n◈ Episodes : {episode} [ #NEW ]\n◈ Audio    : Jap Dub [ #ESUB ]\n◈ Quality  : {quality_list}\n◈ Genre    : {genre}\n╰──────────────\n<blockquote>❖ 𝐌ᴧᴅє 𝐁ɣ ➛ ˹ SyntaxRealm.t.me ˼</b></blockquote>"
-    },
     "UPSTREAM_REPO": {
       "description": "GitHub repo URL to pull updates from on each restart",
       "required": false,
       "value": "https://github.com/IamElite/sp"
-    },
-    "UPSTREAM_BRANCH": {
-      "description": "Branch to track for upstream updates",
-      "required": false,
-      "value": "main"
-    },
-    "LOG_LEVEL": {
-      "description": "Logging level (DEBUG, INFO, WARNING, ERROR)",
-      "required": false,
-      "value": "INFO"
     }
   },
   "formation": {
