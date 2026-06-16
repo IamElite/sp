@@ -13,6 +13,7 @@ class Database:
         self.releases: Collection | None = None
         self.files: Collection | None = None
         self.jobs: Collection | None = None
+        self.users: Collection | None = None
 
     def connect(self):
         logger.info("Connecting to MongoDB...")
@@ -26,6 +27,7 @@ class Database:
         self.releases = self._db["releases"]
         self.files = self._db["files"]
         self.jobs = self._db["jobs"]
+        self.users = self._db["users"]
         self._create_indexes()
         logger.info("MongoDB connected")
 
@@ -34,6 +36,7 @@ class Database:
         self.releases.create_index([("release_date", -1)])
         self.files.create_index("encoded_link")
         self.files.create_index([("message_id", 1), ("channel_id", 1)])
+        self.users.create_index("_id")
         self.jobs.create_index([("status", 1), ("priority", -1), ("created_at", 1)])
         self.jobs.create_index([("type", 1), ("status", 1)])
 

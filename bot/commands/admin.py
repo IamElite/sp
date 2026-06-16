@@ -1,7 +1,10 @@
+import asyncio
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
 from config.settings import Config
+from database.mongo import db
 from utils.logger import setup_logger
 from utils.queue_manager import QueueManager
 
@@ -12,13 +15,15 @@ logger = setup_logger("admin_commands")
 async def stats_command(client: Client, message: Message):
     qm = QueueManager()
     stats = qm.get_stats()
+    total_users = db.users.count_documents({})
     text = (
         "**📊 Bot Stats**\n\n"
         f"Total Jobs: {stats['total']}\n"
         f"Pending: {stats['pending']}\n"
         f"Running: {stats['running']}\n"
         f"Done: {stats['done']}\n"
-        f"Failed: {stats['failed']}"
+        f"Failed: {stats['failed']}\n"
+        f"Users: {total_users}"
     )
     await message.reply_text(text)
 
@@ -33,3 +38,37 @@ async def retry_command(client: Client, message: Message):
 @Client.on_message(filters.command("log") & filters.user(Config.OWNER_ID))
 async def log_command(client: Client, message: Message):
     await message.reply_document("bot.log")
+
+
+@Client.on_message(filters.command("clean") & filters.user(Config.OWNER_ID))
+async def clean_command(client: Client, message: Message):
+    msg = await message.reply_text("Cleaning up old jobs...")
+    qm = QueueManager()
+    jobs = qm.cleanup_old_jobs()
+    await msg.edit_text(f"Cleaned {jobs} old done/failed jobs.")
+
+
+@Client.on_message(filters.command("broadcast") & filters.user(Config.OWNER_ID))
+async def broadcast_command(client: Client, message: Message):
+    text = message.text.split(maxsplit=1)
+    if len(text) < 2:
+        await message.reply_text("Usage: /broadcast <message>")
+        return
+
+    broadcast_msg = text[1]
+    users = db.users.find({}, {"_id": 1})
+    sent = 0
+    failed = 0
+
+    for user in users:
+        try:
+            await client.send_message(chat_id=user["_id"], text=broadcast_msg)
+            await asyncio.sleep(0.05)
+            sent += 1
+        except Exception as e:
+            failed += 1
+            logger.warning(f"Broadcast to {user['_id']} failed: {e}")
+
+    await message.reply_text(
+        f"Broadcast done.\nSent: {sent}\nFailed: {failed}"
+    )

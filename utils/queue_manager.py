@@ -95,3 +95,13 @@ class QueueManager:
             )
             count += 1
         return count
+
+    def cleanup_old_jobs(self, hours: int = 24) -> int:
+        cutoff = time.time() - hours * 3600
+        result = self.collection.delete_many({
+            "status": {"$in": ["done", "failed"]},
+            "completed_at": {"$lt": cutoff},
+        })
+        if result.deleted_count:
+            logger.info(f"Cleaned {result.deleted_count} old jobs")
+        return result.deleted_count
