@@ -42,10 +42,52 @@ async def log_command(client: Client, message: Message):
 
 @Client.on_message(filters.command("clean") & filters.user(Config.OWNER_ID))
 async def clean_command(client: Client, message: Message):
-    msg = await message.reply_text("Cleaning up old jobs...")
+    msg = await message.reply_text("Cleaning database...")
+
     qm = QueueManager()
     jobs = qm.cleanup_old_jobs()
-    await msg.edit_text(f"Cleaned {jobs} old done/failed jobs.")
+
+    orphan_files = 0
+    orphan_ids = []
+    for f in db.files.find({"release_hash": ""}, {"_id": 1}):
+        orphan_ids.append(f["_id"])
+    if orphan_ids:
+        result = db.files.delete_many({"_id": {"$in": orphan_ids}})
+        orphan_files = result.deleted_count
+
+    release_fields = db.releases.update_many(
+        {"processed": True},
+        {"$unset": {"file_name": "", "magnet_uri": ""}},
+    )
+    meta_fields = db.releases.update_many(
+        {"processed": True, "metadata": {"$exists": True}},
+        {"$unset": {
+            "metadata.synopsis": "",
+            "metadata.genres": "",
+            "metadata.poster_url": "",
+            "metadata.rating": "",
+            "metadata.season": "",
+            "metadata.episodes": "",
+            "metadata.status": "",
+            "metadata.url": "",
+            "metadata.source": "",
+            "metadata.source_id": "",
+            "metadata.alternate_titles": "",
+        }},
+    )
+
+    parts = []
+    if jobs:
+        parts.append(f"Jobs: {jobs}")
+    if orphan_files:
+        parts.append(f"Orphan files: {orphan_files}")
+    if release_fields.modified_count:
+        parts.append(f"Releases cleaned: {release_fields.modified_count}")
+    if meta_fields.modified_count:
+        parts.append(f"Metadata stripped: {meta_fields.modified_count}")
+
+    text = "✅ DB Cleaned\n" + "\n".join(parts) if parts else "Nothing to clean."
+    await msg.edit_text(text)
 
 
 @Client.on_message(filters.command("broadcast") & filters.user(Config.OWNER_ID))
