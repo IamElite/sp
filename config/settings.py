@@ -43,6 +43,7 @@ class Config:
 
     SCHEDULE_ENABLED = os.getenv("SCHEDULE_ENABLED", "true").lower() == "true"
     SCHEDULE_POST_TIME = os.getenv("SCHEDULE_POST_TIME", "00:10")
+    SCHEDULE_TIMEZONE = os.getenv("SCHEDULE_TIMEZONE", "Asia/Kolkata")
 
     TARGET_POST_CAPTION = os.getenv(
         "TARGET_POST_CAPTION",

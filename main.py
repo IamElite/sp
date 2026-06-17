@@ -95,7 +95,7 @@ async def _schedule_loop():
             last = db.schedule_meta.find_one({"type": "daily"})
             if not last or last.get("date") != today_str:
                 target_hour, target_min = (int(x) for x in Config.SCHEDULE_POST_TIME.split(":"))
-                now = datetime.now(pytz.timezone("Asia/Kolkata"))
+                now = datetime.now(pytz.timezone(Config.SCHEDULE_TIMEZONE))
                 if now.hour == target_hour and now.minute == target_min:
                     logger.info("Daily schedule post time reached")
                     await services.schedule_service.post_schedule(tg.client, Config.TARGET_CHAT_ID)
