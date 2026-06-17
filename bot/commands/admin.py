@@ -114,3 +114,18 @@ async def broadcast_command(client: Client, message: Message):
     await message.reply_text(
         f"Broadcast done.\nSent: {sent}\nFailed: {failed}"
     )
+
+
+@Client.on_message(filters.command("schedule") & filters.user(Config.OWNER_ID))
+async def schedule_command(client: Client, message: Message):
+    if not Config.TARGET_CHAT_ID:
+        await message.reply_text("TARGET_CHAT_ID not set.")
+        return
+
+    from services.schedule_service import post_schedule
+
+    ok = await post_schedule(client, Config.TARGET_CHAT_ID)
+    if ok:
+        await message.reply_text("Schedule posted + pinned.")
+    else:
+        await message.reply_text("Failed to fetch schedule.")

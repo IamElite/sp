@@ -57,6 +57,21 @@
       "description": "GitHub repo URL to pull updates from on each restart",
       "required": false,
       "value": "https://github.com/IamElite/sp"
+    },
+    "UPSTREAM_BRANCH": {
+      "description": "Branch to track for upstream updates",
+      "required": false,
+      "value": "main"
+    },
+    "SCHEDULE_ENABLED": {
+      "description": "Auto-post daily schedule to target channel (true/false)",
+      "required": false,
+      "value": "true"
+    },
+    "SCHEDULE_POST_TIME": {
+      "description": "IST time (HH:MM) to post daily schedule",
+      "required": false,
+      "value": "00:10"
     }
   },
   "formation": {

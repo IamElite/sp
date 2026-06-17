@@ -1,8 +1,8 @@
 import asyncio
 import threading
+from datetime import date, datetime
 
-from datetime import date
-
+import pytz
 from flask import Flask, jsonify, request
 
 from config.settings import Config
@@ -16,6 +16,7 @@ import bot.handlers.upload
 import bot.commands.admin
 import bot.commands.user
 import bot.callbacks.manager
+import services.schedule_service
 
 logger = setup_logger("main")
 
@@ -75,12 +76,33 @@ async def start_bot():
         logger.info("Bot started — listening for updates")
 
         worker_task = asyncio.create_task(worker.worker_loop())
-        await asyncio.gather(worker_task)
-    except (KeyboardInterrupt, asyncio.CancelledError):
+        schedule_task = asyncio.create_task(_schedule_loop())
+        await asyncio.gather(worker_task, schedule_task)
+    except (KeyboardInterrupt, CancelledError):
         pass
     finally:
         await tg.stop()
         db.close()
+
+
+async def _schedule_loop():
+    if not Config.SCHEDULE_ENABLED or not Config.TARGET_CHAT_ID:
+        logger.info("Schedule auto-post disabled")
+        return
+    while True:
+        try:
+            today_str = date.today().isoformat()
+            last = db.schedule_meta.find_one({"type": "daily"})
+            if not last or last.get("date") != today_str:
+                target_hour, target_min = (int(x) for x in Config.SCHEDULE_POST_TIME.split(":"))
+                now = datetime.now(pytz.timezone("Asia/Kolkata"))
+                if now.hour == target_hour and now.minute == target_min:
+                    logger.info("Daily schedule post time reached")
+                    await services.schedule_service.post_schedule(tg.client, Config.TARGET_CHAT_ID)
+                    await asyncio.sleep(90)
+        except Exception as e:
+            logger.error(f"Schedule loop error: {e}")
+        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":

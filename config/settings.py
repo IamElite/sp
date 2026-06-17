@@ -41,6 +41,9 @@ class Config:
 
     ENCODE_QUALITY = os.getenv("ENCODE_QUALITY", "auto")
 
+    SCHEDULE_ENABLED = os.getenv("SCHEDULE_ENABLED", "true").lower() == "true"
+    SCHEDULE_POST_TIME = os.getenv("SCHEDULE_POST_TIME", "00:10")
+
     TARGET_POST_CAPTION = os.getenv(
         "TARGET_POST_CAPTION",
         '<blockquote><b>➲ {anime_name}</b></blockquote>\n'

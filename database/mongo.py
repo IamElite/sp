@@ -15,6 +15,8 @@ class Database:
         self.jobs: Collection | None = None
         self.users: Collection | None = None
         self.pending_posts: Collection | None = None
+        self.title_cache: Collection | None = None
+        self.schedule_meta: Collection | None = None
 
     def connect(self):
         logger.info("Connecting to MongoDB...")
@@ -30,6 +32,8 @@ class Database:
         self.jobs = self._db["jobs"]
         self.users = self._db["users"]
         self.pending_posts = self._db["pending_posts"]
+        self.title_cache = self._db["title_cache"]
+        self.schedule_meta = self._db["schedule_meta"]
         self._create_indexes()
         logger.info("MongoDB connected")
 
@@ -42,6 +46,9 @@ class Database:
         self.jobs.create_index([("status", 1), ("priority", -1), ("created_at", 1)])
         self.jobs.create_index([("type", 1), ("status", 1)])
         self.pending_posts.create_index("group_id")
+        self.title_cache.create_index("page")
+        self.title_cache.create_index("updated_at")
+        self.schedule_meta.create_index("date")
 
     def close(self):
         if self._client:
