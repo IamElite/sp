@@ -63,16 +63,6 @@
       "required": false,
       "value": "main"
     },
-    "SCHEDULE_ENABLED": {
-      "description": "Auto-post daily schedule to target channel (true/false)",
-      "required": false,
-      "value": "true"
-    },
-    "SCHEDULE_POST_TIME": {
-      "description": "IST time (HH:MM) to post daily schedule",
-      "required": false,
-      "value": "00:10"
-    }
   },
   "formation": {
     "web": {
